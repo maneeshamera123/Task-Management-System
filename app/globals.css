@@ -228,96 +228,6 @@
   --pai-info-700: #175cd3;
   --pai-info-800: #1849a9;
   --pai-info-900: #194185;
-  /* Gradients */
-  /* grey */
-  --pai-gradient-gray-1: conic-gradient(
-    from 259deg at 50% 50%,
-    var(--pai-gray-900) 0deg,
-    var(--pai-gray-50) 360deg
-  );
-  --pai-gradient-gray-2: linear-gradient(
-    27deg,
-    var(--pai-gray-300) 8.33%,
-    var(--pai-gray-100) 91.67%
-  );
-  --pai-gradient-gray-3: linear-gradient(
-    45deg,
-    var(--pai-gray-400) 0%,
-    var(--pai-gray-100) 100%
-  );
-  --pai-gradient-gray-4: linear-gradient(
-    90deg,
-    var(--pai-gray-700) 0%,
-    var(--pai-gray-500) 100%
-  );
-  --pai-gradient-gray-5: linear-gradient(
-    45deg,
-    var(--pai-gray-900) 0%,
-    var(--pai-gray-600) 100%
-  );
-  --pai-gradient-gray-6: linear-gradient(
-    45deg,
-    var(--pai-main-dark) 0%,
-    var(--pai-gray-800) 100%
-  );
-  --pai-gradient-gray-7: linear-gradient(
-    63deg,
-    var(--pai-main-dark) 16.72%,
-    var(--pai-gray-700) 83.39%
-  );
-  /* brand */
-  --pai-gradient-brand-1: conic-gradient(
-    from 259deg at 50% 50%,
-    var(--pai-brand-400) 0deg,
-    rgba(255, 184, 84, 0) 360deg
-  );
-  --pai-gradient-brand-2: linear-gradient(
-    27deg,
-    rgba(255, 243, 212, 0.5) 8.33%,
-    var(--pai-brand-300) 91.67%
-  );
-  --pai-gradient-brand-3: linear-gradient(
-    45deg,
-    var(--pai-brand-100) 0%,
-    var(--pai-brand-400) 100%
-  );
-  --pai-gradient-brand-4: linear-gradient(
-    90deg,
-    var(--pai-brand-600) 0%,
-    var(--pai-brand-500) 100%
-  );
-  --pai-gradient-brand-5: linear-gradient(
-    45deg,
-    #c65908 0%,
-    var(--pai-brand-600) 100%
-  );
-  --pai-gradient-brand-6: linear-gradient(
-    45deg,
-    var(--pai-brand-800) 0%,
-    var(--pai-brand-600) 100%
-  );
-  --pai-gradient-brand-7: linear-gradient(
-    63deg,
-    var(--pai-brand-900) 16.72%,
-    var(--pai-brand-600) 83.39%
-  );
-  /* logo */
-  --pai-gradient-logo: linear-gradient(90deg, #997b44 0%, #ffc863 100%);
-
-  --gradient-gary-1: var(--pai-gradient-gray-1);
-  --gradient-gary-2: var(--pai-gradient-gray-2);
-  --gradient-gary-3: var(--pai-gradient-gray-3);
-  --gradient-gary-4: var(--pai-gradient-gray-4);
-  --gradient-gary-5: var(--pai-gradient-gray-5);
-  --gradient-gary-6: var(--pai-gradient-gray-6);
-  --gradient-gary-7: var(--pai-gradient-gray-7);
-  --gradient-brand-1: var(--pai-gradient-brand-1);
-  --gradient-brand-2: var(--pai-gradient-brand-2);
-  --gradient-brand-3: var(--pai-gradient-brand-3);
-  --gradient-brand-4: var(--pai-gradient-brand-4);
-  --gradient-brand-5: var(--pai-gradient-brand-5);
-  --gradient-brand-6: var(--pai-gradient-brand-6);
-  --gradient-brand-7: var(--pai-gradient-brand-7);
 }
 
 .dark {
@@ -363,7 +273,7 @@
   }
 }
 
-/* Color utilities (solid backgrounds and gradients) */
+/* Color utilities (solid backgrounds) */
 @layer utilities {
   /* Solid background utilities (no bg-pai prefix) */
   /* main */
@@ -515,57 +425,6 @@
   }
   .success-900 {
     background: var(--pai-success-900);
-  }
-
-  /* grey */
-  .gray-1 {
-    background: var(--pai-gradient-gray-1);
-  }
-  .gray-2 {
-    background: var(--pai-gradient-gray-2);
-  }
-  .gray-3 {
-    background: var(--pai-gradient-gray-3);
-  }
-  .gray-4 {
-    background: var(--pai-gradient-gray-4);
-  }
-  .gray-5 {
-    background: var(--pai-gradient-gray-5);
-  }
-  .gray-6 {
-    background: var(--pai-gradient-gray-6);
-  }
-  .gray-7 {
-    background: var(--pai-gradient-gray-7);
-  }
-
-  /* brand */
-  .brand-1 {
-    background: var(--pai-gradient-brand-1);
-  }
-  .brand-2 {
-    background: var(--pai-gradient-brand-2);
-  }
-  .brand-3 {
-    background: var(--pai-gradient-brand-3);
-  }
-  .brand-4 {
-    background: var(--pai-gradient-brand-4);
-  }
-  .brand-5 {
-    background: var(--pai-gradient-brand-5);
-  }
-  .brand-6 {
-    background: var(--pai-gradient-brand-6);
-  }
-  .brand-7 {
-    background: var(--pai-gradient-brand-7);
-  }
-
-  /* logo */
-  .logo {
-    background: var(--pai-gradient-logo);
   }
 }
 

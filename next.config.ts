@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
+import { envVars } from "./src/lib/env";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  env: {
+    DATABASE_URL: envVars.DATABASE_URL,
+  },
 };
 
 export default nextConfig;

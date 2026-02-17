@@ -17,12 +17,6 @@ export function Hero() {
         >
           Get Started
         </Link>
-        <Link 
-          href="/demo" 
-          className="px-8 py-3 border border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50 transition-colors font-medium text-lg"
-        >
-          View Demo
-        </Link>
       </div>
     </section>
   );
