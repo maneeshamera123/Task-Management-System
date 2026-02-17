@@ -8,6 +8,13 @@
       "when": 1771334470442,
       "tag": "0000_bored_master_mold",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1771336376251,
+      "tag": "0001_complex_sunspot",
+      "breakpoints": true
     }
   ]
 }

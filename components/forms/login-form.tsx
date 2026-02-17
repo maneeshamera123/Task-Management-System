@@ -8,7 +8,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import taskManagementLogo from "@/public/_static/logo/task-management.svg";
-import GoogleIcon from "@/public/_static/brands/google-icon.svg";
 import { siteConfig } from "@/config/site";
 import { useState } from 'react';
 import { useRouter } from "next/navigation";
@@ -20,18 +19,41 @@ export function LoginForm({
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSignIn = () => {
-    // TODO: Implement login logic
-    console.log("Login attempt:", { email, password, rememberMe });
-    // For now, just navigate to dashboard
-    router.push("/dashboard");
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Login failed");
+      }
+
+      // Store access token in localStorage (for simplicity in this demo)
+      localStorage.setItem("accessToken", data.accessToken);
+
+      router.push("/dashboard");
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <form onSubmit={(e) => e.preventDefault()}>
+      <form onSubmit={handleSignIn}>
         <div className="flex flex-col gap-6">
           <div className="flex flex-col items-center gap-2">
             <Link
@@ -65,60 +87,29 @@ export function LoginForm({
               />
             </div>
             <div className="grid gap-3">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  required
-                  value={password}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-                />
-            </div>
-            <div className="flex items-center gap-2">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setRememberMe(e.target.checked)
-                }
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Enter your password"
+                required
+                value={password}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
               />
-              <Label htmlFor="remember-me">Remember me</Label>
             </div>
+            {error && <p className="text-destructive text-sm font-medium">{error}</p>}
             <Button
               variant="default"
-              type="button"
+              type="submit"
               className="w-full"
-              onClick={handleSignIn}
-              disabled={!email}
+              disabled={isLoading || !email || !password}
             >
-              Sign in
+              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Sign in"}
             </Button>
           </div>
         </div>
       </form>
-      <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
-        By clicking continue, you agree to our{" "}
-        <a
-          href="/legal/terms-of-service"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Terms of Service
-        </a>{" "}
-        and{" "}
-        <a
-          href="/legal/privacy-policy"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Privacy Policy
-        </a>
-        .
-      </div>
     </div>
   );
 }
