@@ -1,14 +1,33 @@
-import { MoreVertical } from "lucide-react";
+'use client';
+
+import { Edit, Trash2, View } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Task } from "@/lib/types/task";
 
 import { getStatusIcon, getStatusColor, getPriorityColor } from "@/lib/utils/task-utils";
+import { ViewTaskDialog } from "./ViewTaskDialog";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface TaskCardProps {
     task: Task;
 }
 
 export function TaskCard({ task }: TaskCardProps) {
+    const router = useRouter();
+    const handleDelete = async () => {
+        const res = await fetch(`/api/tasks/${task.id}`, {
+            method: 'DELETE',
+        });
+        if (!res.ok) {
+            const errorData = await res.json();
+            console.error('Delete API error:', errorData);
+            toast.error(errorData.error || 'Failed to delete task');
+            return;
+        }
+        toast.success('Task deleted successfully');
+        router.refresh();
+    };
 
     return (
         <div className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
@@ -34,7 +53,14 @@ export function TaskCard({ task }: TaskCardProps) {
                                 </span>
                                 {task.dueDate && (
                                     <span className="text-xs text-gray-500 dark:text-gray-400">
-                                        Due: {new Date(task.dueDate).toLocaleDateString()}
+                                        Due: {new Date(task.dueDate).toLocaleString('en-IN', {
+                                            timeZone: 'Asia/Kolkata',
+                                            day: 'numeric',
+                                            month: 'numeric',
+                                            year: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}
                                     </span>
                                 )}
                             </div>
@@ -43,8 +69,18 @@ export function TaskCard({ task }: TaskCardProps) {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                    <Button variant="ghost" size="icon">
-                        <MoreVertical className="h-4 w-4" />
+                    <ViewTaskDialog task={task}>
+                        <Button variant="outline" size="icon-sm">
+                            <View className="h-2 w-2" />
+                        </Button>
+                    </ViewTaskDialog>
+                    <ViewTaskDialog task={task} isEditable={true}>
+                        <Button size="icon-sm">
+                            <Edit className="h-2 w-2" />
+                        </Button>
+                    </ViewTaskDialog>
+                    <Button variant="destructive" size="icon-sm" onClick={handleDelete}>
+                        <Trash2 className="h-2 w-2" />
                     </Button>
                 </div>
             </div>

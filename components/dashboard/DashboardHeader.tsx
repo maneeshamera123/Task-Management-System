@@ -1,8 +1,10 @@
 "use client";
 
-import { Plus, LogOutIcon } from "lucide-react";
+import { LogOutIcon, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { NewTaskDialog } from "./NewTaskDialog";
+import { toast } from "sonner";
 
 export function DashboardHeader() {
     const router = useRouter();
@@ -11,6 +13,7 @@ export function DashboardHeader() {
             method: "POST",
         });
         if (res.ok) {
+            toast.success("Logged out successfully");
             router.push("/login");
         }
     }
@@ -22,10 +25,12 @@ export function DashboardHeader() {
                     <p className="text-gray-600 dark:text-gray-400 mt-1">Manage and track your tasks efficiently</p>
                 </div>
                 <div className="flex gap-2">
-                    <Button className="shrink-0">
-                        <Plus className="h-4 w-4 mr-2" />
-                        New Task
-                    </Button>
+                    <NewTaskDialog>
+                        <Button className="shrink-0">
+                            <Plus className="h-4 w-4" />
+                            New Task
+                        </Button>
+                    </NewTaskDialog>
                     <Button className="shrink-0" onClick={() => { handleLogout() }}>
                         <LogOutIcon className="h-4 w-4 mr-2" />
                     </Button>

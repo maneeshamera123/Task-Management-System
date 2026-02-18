@@ -5,7 +5,7 @@ import { verifyAccessToken } from '@/lib/utils/auth-utils';
 // GET /api/tasks/[id] - Get a single task
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify authentication
@@ -19,7 +19,7 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const taskId = params.id;
+    const { id: taskId } = await params;
     if (!taskId) {
       return NextResponse.json({ error: 'Task ID is required' }, { status: 400 });
     }
@@ -44,7 +44,7 @@ export async function GET(
 // PATCH /api/tasks/[id] - Update a task
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify authentication
@@ -58,7 +58,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const taskId = params.id;
+    const { id: taskId } = await params;
     if (!taskId) {
       return NextResponse.json({ error: 'Task ID is required' }, { status: 400 });
     }
@@ -144,7 +144,7 @@ export async function PATCH(
 // DELETE /api/tasks/[id] - Delete a task
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify authentication
@@ -158,7 +158,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const taskId = params.id;
+    const { id: taskId } = await params;
     if (!taskId) {
       return NextResponse.json({ error: 'Task ID is required' }, { status: 400 });
     }

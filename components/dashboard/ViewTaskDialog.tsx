@@ -1,0 +1,255 @@
+"use client"
+
+import { useState } from "react"
+import { Task } from "@/lib/types/task"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { getStatusIcon, getStatusColor, getPriorityColor } from "@/lib/utils/task-utils"
+import { useRouter } from "next/navigation"
+
+interface ViewTaskDialogProps {
+  task: Task
+  isEditable?: boolean
+  children?: React.ReactNode
+}
+
+export function ViewTaskDialog({ task, isEditable = false, children }: ViewTaskDialogProps) {
+  const router = useRouter()
+  const [open, setOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [formData, setFormData] = useState({
+    title: task.title,
+    description: task.description || "",
+    status: task.status,
+    priority: task.priority,
+    dueDate: task.dueDate ? new Date(task.dueDate).toISOString().slice(0, 16) : ""
+  })
+
+  const formatDateTime = (dateString: string | Date | null) => {
+    if (!dateString) return "Not set"
+    return new Date(dateString).toLocaleString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      day: 'numeric',
+      month: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!isEditable) return
+    
+    setLoading(true)
+
+    try {
+      const response = await fetch(`/api/tasks/${task.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: formData.title,
+          description: formData.description,
+          status: formData.status,
+          priority: formData.priority,
+          dueDate: formData.dueDate || null,
+        }),
+      })
+
+      if (response.ok) {
+        setOpen(false)
+        router.refresh()
+      } else {
+        const error = await response.json()
+        console.error("Error updating task:", error.error)
+      }
+    } catch (error) {
+      console.error("Error updating task:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }))
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        {children}
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[500px]">
+        <form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {getStatusIcon(task.status)}
+              {isEditable ? "Edit Task" : task.title}
+            </DialogTitle>
+            <DialogDescription>
+              {isEditable ? "Update the task details below." : "Task details and information"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="title">Title</Label>
+              {isEditable ? (
+                <Input
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => handleInputChange("title", e.target.value)}
+                  placeholder="Enter task title"
+                  required
+                />
+              ) : (
+                <p className="text-sm text-gray-600 dark:text-gray-400">{task.title}</p>
+              )}
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="description">Description</Label>
+              {isEditable ? (
+                <textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => handleInputChange("description", e.target.value)}
+                  placeholder="Enter task description"
+                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                  rows={4}
+                />
+              ) : (
+                <p className="text-sm text-gray-600 dark:text-gray-400 min-h-[60px] whitespace-pre-wrap">
+                  {task.description || "No description provided"}
+                </p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="status">Status</Label>
+                {isEditable ? (
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value: "pending" | "in-progress" | "completed") => handleInputChange("status", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="in-progress">In Progress</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium w-fit ${getStatusColor(task.status)}`}>
+                    {task.status.replace("-", " ")}
+                  </span>
+                )}
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="priority">Priority</Label>
+                {isEditable ? (
+                  <Select
+                    value={formData.priority}
+                    onValueChange={(value: "low" | "medium" | "high" | "urgent") => handleInputChange("priority", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select priority" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="urgent">Urgent</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium w-fit ${getPriorityColor(task.priority)}`}>
+                    {task.priority}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="dueDate">Due Date & Time</Label>
+              {isEditable ? (
+                <Input
+                  id="dueDate"
+                  type="datetime-local"
+                  value={formData.dueDate}
+                  onChange={(e) => handleInputChange("dueDate", e.target.value)}
+                />
+              ) : (
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {formatDateTime(task.dueDate)}
+                </p>
+              )}
+            </div>
+
+            {!isEditable && (
+              <>
+                <div className="grid gap-2">
+                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Created At
+                  </Label>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {formatDateTime(task.createdAt)}
+                  </p>
+                </div>
+
+                <div className="grid gap-2">
+                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Last Updated
+                  </Label>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {formatDateTime(task.updatedAt)}
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
+          {isEditable && (
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+                disabled={loading}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={loading || !formData.title.trim()}>
+                {loading ? "Updating..." : "Update Task"}
+              </Button>
+            </DialogFooter>
+          )}
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}

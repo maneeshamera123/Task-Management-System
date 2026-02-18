@@ -5,7 +5,7 @@ import { verifyAccessToken } from '@/lib/utils/auth-utils';
 // POST /api/tasks/[id]/toggle - Toggle task status
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify authentication
@@ -19,7 +19,7 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const taskId = params.id;
+    const { id: taskId } = await params;
     if (!taskId) {
       return NextResponse.json({ error: 'Task ID is required' }, { status: 400 });
     }

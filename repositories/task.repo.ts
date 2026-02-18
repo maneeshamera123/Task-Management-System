@@ -141,9 +141,10 @@ export class TaskRepository {
   static async deleteTask(userId: string, taskId: string): Promise<boolean> {
     const result = await db
       .delete(tasks)
-      .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)));
+      .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)))
+      .returning({ id: tasks.id });
 
-    return result.rowCount > 0;
+    return result.length > 0;
   }
 
   // Toggle task status (pending <-> in-progress <-> completed)
