@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Edit, Trash2, View } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Task } from "@/lib/types/task";
@@ -15,6 +16,8 @@ interface TaskCardProps {
 
 export function TaskCard({ task }: TaskCardProps) {
     const router = useRouter();
+    const [isToggling, setIsToggling] = useState(false);
+
     const handleDelete = async () => {
         const res = await fetch(`/api/tasks/${task.id}`, {
             method: 'DELETE',
@@ -29,14 +32,39 @@ export function TaskCard({ task }: TaskCardProps) {
         router.refresh();
     };
 
+    const handleToggle = async () => {
+        setIsToggling(true);
+        try {
+            const res = await fetch(`/api/tasks/${task.id}/toggle`, {
+                method: 'POST',
+            });
+            if (!res.ok) {
+                const errorData = await res.json();
+                console.error('Toggle API error:', errorData);
+                toast.error(errorData.error || 'Failed to toggle task status');
+                return;
+            }
+            const updatedTask = await res.json();
+            toast.success(`Task status updated to ${updatedTask.status.replace('-', ' ')}`);
+            router.refresh();
+        } finally {
+            setIsToggling(false);
+        }
+    };
+
     return (
         <div className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div className="flex-1 min-w-0">
                     <div className="flex items-start gap-3">
-                        <div className="mt-1">
+                        <button
+                            onClick={handleToggle}
+                            disabled={isToggling}
+                            className="mt-1 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title={`Click to toggle status (current: ${task.status.replace('-', ' ')})`}
+                        >
                             {getStatusIcon(task.status)}
-                        </div>
+                        </button>
                         <div className="flex-1 min-w-0">
                             <h3 className="text-base font-medium text-gray-900 dark:text-white truncate">
                                 {task.title}
