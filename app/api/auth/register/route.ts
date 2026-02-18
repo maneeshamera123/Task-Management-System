@@ -1,5 +1,5 @@
 import { userRepo } from "@/repositories/user.repo";
-import { hashPassword, generateAccessToken, generateRefreshToken } from "@/src/lib/auth-utils";
+import { hashPassword, generateAccessToken, generateRefreshToken } from "@/lib/utils/auth-utils";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
@@ -48,13 +48,21 @@ export async function POST(req: Request) {
             maxAge: 60 * 60 * 24 * 7,
         });
 
+        // Set access token in cookie for API calls
+        cookieStore.set("auth-token", accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            path: "/",
+            maxAge: 60 * 15,
+        });
+
         return NextResponse.json({
             user: {
                 id: newUser.id,
                 email: newUser.email,
                 name: newUser.name,
             },
-            accessToken,
         });
     } catch (error) {
         console.error("Registration error:", error);

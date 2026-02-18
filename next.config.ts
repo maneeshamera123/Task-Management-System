@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import { envVars } from "./src/lib/env";
+import { envVars } from "./lib/env";
 
 const nextConfig: NextConfig = {
   env: {

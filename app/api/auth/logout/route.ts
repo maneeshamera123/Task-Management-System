@@ -11,8 +11,9 @@ export async function POST(req: Request) {
             await userRepo.deleteRefreshToken(refreshToken);
         }
 
-        // Clear cookie
+        // Clear cookies
         cookieStore.delete("refreshToken");
+        cookieStore.delete("auth-token");
 
         return NextResponse.json({ message: "Logged out successfully" });
     } catch (error) {

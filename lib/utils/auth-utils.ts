@@ -1,6 +1,6 @@
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcrypt";
-import { envVars } from "./env";
+import { envVars } from "@/lib/env";
 
 const JWT_SECRET = new TextEncoder().encode(envVars.JWT_SECRET);
 const JWT_REFRESH_SECRET = new TextEncoder().encode(envVars.JWT_REFRESH_SECRET);

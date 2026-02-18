@@ -15,6 +15,13 @@
       "when": 1771336376251,
       "tag": "0001_complex_sunspot",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1771346186037,
+      "tag": "0002_right_roughhouse",
+      "breakpoints": true
     }
   ]
 }

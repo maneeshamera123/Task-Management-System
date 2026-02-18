@@ -1,5 +1,5 @@
-import { db } from "@/src/lib/db";
-import { users, refreshTokens } from "@/src/lib/db/schema";
+import { db } from "@/lib/db";
+import { users, refreshTokens } from "@/lib/db/schema";
 import { eq, and, gt } from "drizzle-orm";
 
 export const userRepo = {

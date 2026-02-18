@@ -6,6 +6,7 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   JWT_SECRET: z.string().min(1, 'JWT_SECRET is required'),
   JWT_REFRESH_SECRET: z.string().min(1, 'JWT_REFRESH_SECRET is required'),
+  NEXT_PUBLIC_APP_URL: z.string().url().default('http://localhost:3000'),
 });
 
 // Function to get validated environment variables
@@ -15,6 +16,7 @@ function getEnv() {
     NODE_ENV: process.env.NODE_ENV,
     JWT_SECRET: process.env.JWT_SECRET,
     JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   });
 }
 
@@ -31,6 +33,9 @@ export const envVars = {
   },
   get JWT_REFRESH_SECRET() {
     return getEnv().JWT_REFRESH_SECRET;
+  },
+  get NEXT_PUBLIC_APP_URL() {
+    return getEnv().NEXT_PUBLIC_APP_URL;
   },
 } as const;
 

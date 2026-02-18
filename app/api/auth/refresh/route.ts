@@ -1,5 +1,5 @@
 import { userRepo } from "@/repositories/user.repo";
-import { verifyRefreshToken, generateAccessToken } from "@/src/lib/auth-utils";
+import { verifyRefreshToken, generateAccessToken } from "@/lib/utils/auth-utils";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
@@ -28,7 +28,16 @@ export async function POST(req: Request) {
         // Generate new access token
         const accessToken = await generateAccessToken({ userId: payload.userId });
 
-        return NextResponse.json({ accessToken });
+        // Set new access token in cookie
+        cookieStore.set("auth-token", accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            path: "/",
+            maxAge: 60 * 15,
+        });
+
+        return NextResponse.json({ message: "Token refreshed successfully" });
     } catch (error) {
         console.error("Refresh error:", error);
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });
