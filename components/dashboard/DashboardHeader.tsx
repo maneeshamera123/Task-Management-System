@@ -2,8 +2,18 @@
 
 import { Plus, LogOutIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 export function DashboardHeader() {
+    const router = useRouter();
+    const handleLogout = async () => {
+        const res = await fetch("/api/auth/logout", {
+            method: "POST",
+        });
+        if (res.ok) {
+            router.push("/login");
+        }
+    }
     return (
         <div className="mb-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -16,7 +26,7 @@ export function DashboardHeader() {
                         <Plus className="h-4 w-4 mr-2" />
                         New Task
                     </Button>
-                    <Button className="shrink-0">
+                    <Button className="shrink-0" onClick={() => { handleLogout() }}>
                         <LogOutIcon className="h-4 w-4 mr-2" />
                     </Button>
                 </div>
