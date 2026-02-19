@@ -21,15 +21,45 @@ export default async function Dashboard({ searchParams }: DashboardProps) {
   const resolvedSearchParams = await searchParams;
   // Verify authentication
   const cookieStore = await cookies();
-  const token = cookieStore.get("auth-token")?.value;
+  let token = cookieStore.get("auth-token")?.value;
+  const refreshToken = cookieStore.get("refreshToken")?.value;
 
   if (!token) {
     redirect("/login");
   }
 
+  // Check if access token is expired
   const payload = await verifyAccessToken(token);
   if (!payload || !payload.userId) {
-    redirect("/login");
+    // Try to refresh the token if we have a refresh token
+    if (refreshToken) {
+      try {
+        // Call the refresh API endpoint
+        const refreshRes = await fetch("/api/auth/refresh", {
+          method: "POST",
+          headers: { Cookie: `refreshToken=${refreshToken}` },
+          credentials: "include",
+        });
+        
+        if (refreshRes.ok) {
+          // Get the new token from cookies
+          const newCookieStore = await cookies();
+          token = newCookieStore.get("auth-token")?.value;
+        } else {
+          redirect("/login");
+        }
+      } catch (error) {
+        redirect("/login");
+      }
+    } else {
+      redirect("/login");
+    }
+    
+    // Verify the new token
+    const newPayload = await verifyAccessToken(token || "");
+    if (!newPayload || !newPayload.userId) {
+      redirect("/login");
+    }
   }
 
   // Parse query parameters
