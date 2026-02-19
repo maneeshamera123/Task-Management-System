@@ -38,7 +38,7 @@ export default async function Dashboard({ searchParams }: DashboardProps) {
   const status = (resolvedSearchParams.status as Status) || "all";
   const priority = (resolvedSearchParams.priority as Priority) || "all";
   const search = resolvedSearchParams.search || "";
-  const baseUrl = envVars.NEXT_PUBLIC_APP_URL;
+  const baseUrl = "";
 
   // Build query parameters for the tasks API
   const tasksParams = new URLSearchParams({
@@ -54,9 +54,13 @@ export default async function Dashboard({ searchParams }: DashboardProps) {
   const [tasksRes, statsRes] = await Promise.all([
     fetch(`${baseUrl}/api/tasks?${tasksParams.toString()}`, {
       headers: { Cookie: `auth-token=${token}` },
+      credentials: "include",
+      cache: "no-store",
     }),
     fetch(`${baseUrl}/api/tasks/stats`, {
       headers: { Cookie: `auth-token=${token}` },
+      credentials: "include",
+      cache: "no-store",
     }),
   ]);
 
