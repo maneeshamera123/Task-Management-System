@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { toast } from "sonner"
 import {
   Dialog,
   DialogContent,
@@ -22,7 +23,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Plus } from "lucide-react"
-import { toast } from "sonner"
+import { useTaskForm } from "@/lib/hooks/use-task-form"
+import { useTaskOperations } from "@/lib/hooks/use-task-operations"
 
 interface NewTaskDialogProps {
   children?: React.ReactNode
@@ -31,63 +33,39 @@ interface NewTaskDialogProps {
 export function NewTaskDialog({ children }: NewTaskDialogProps) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    status: "pending" as "pending" | "in-progress" | "completed",
-    priority: "medium" as "low" | "medium" | "high" | "urgent",
-    dueDate: ""
+  
+  const { formData, loading, isValid, resetForm, handleInputChange, validateForm, getSubmitData } = useTaskForm({
+    onSuccess: () => {
+      setOpen(false)
+      resetForm()
+    }
+  })
+  
+  const { createTask } = useTaskOperations({
+    refreshOnSuccess: true,
+    onSuccess: () => {
+      toast.success("Task Created Successfully");
+      setOpen(false);
+      resetForm();
+    }
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
+    
+    const validationError = validateForm()
+    if (validationError) {
+      return
+    }
 
     try {
-      const response = await fetch("/api/tasks", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: formData.title,
-          description: formData.description,
-          status: formData.status,
-          priority: formData.priority,
-          dueDate: formData.dueDate || null,
-        }),
-      })
-
-      if (response.ok) {
-        setOpen(false)
-        setFormData({
-          title: "",
-          description: "",
-          status: "pending",
-          priority: "medium",
-          dueDate: ""
-        })
-        toast.success("Task created successfully")
-        router.push("/dashboard")
-        router.refresh()
-      } else {
-        const error = await response.json()
-        console.error("Error creating task:", error.error)
-      }
+      await createTask(getSubmitData())
     } catch (error) {
-      console.error("Error creating task:", error)
-    } finally {
-      setLoading(false)
+      // Error is handled by useTaskOperations hook
     }
   }
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }))
-  }
+  const validationError = validateForm()
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -117,6 +95,9 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
                 placeholder="Enter task title"
                 required
               />
+              {validationError && (
+                <p className="text-sm text-destructive">{validationError}</p>
+              )}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="description">Description</Label>
@@ -181,7 +162,7 @@ export function NewTaskDialog({ children }: NewTaskDialogProps) {
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading || !formData.title.trim()}>
+            <Button type="submit" disabled={loading || !isValid}>
               {loading ? "Creating..." : "Create Task"}
             </Button>
           </DialogFooter>

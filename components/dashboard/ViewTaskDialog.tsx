@@ -1,10 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { Task } from "@/lib/types/task"
+import { Task } from "@/lib/utils/client-task";
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { toast } from "sonner"
 import {
   Dialog,
   DialogContent,
@@ -22,7 +23,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { getStatusIcon, getStatusColor, getPriorityColor } from "@/lib/utils/task-utils"
-import { useRouter } from "next/navigation"
+import { useTaskForm } from "@/lib/hooks/use-task-form"
+import { useTaskOperations } from "@/lib/hooks/use-task-operations"
 
 interface ViewTaskDialogProps {
   task: Task
@@ -31,16 +33,38 @@ interface ViewTaskDialogProps {
 }
 
 export function ViewTaskDialog({ task, isEditable = false, children }: ViewTaskDialogProps) {
-  const router = useRouter()
   const [open, setOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [formData, setFormData] = useState({
-    title: task.title,
-    description: task.description || "",
-    status: task.status,
-    priority: task.priority,
-    dueDate: task.dueDate ? new Date(task.dueDate).toISOString().slice(0, 16) : ""
+  
+  const { formData, loading, isValid, setInitialData, handleInputChange, validateForm, getSubmitData } = useTaskForm({
+    initialTask: task,
+    onSuccess: () => {
+      setOpen(false)
+    }
   })
+  
+  const { updateTask } = useTaskOperations({
+    refreshOnSuccess: true,
+    onSuccess: () => {
+      toast.success("Task Updated Successfully");
+      setOpen(false);
+    }
+  })
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!isEditable) return
+    
+    const validationError = validateForm()
+    if (validationError) {
+      return
+    }
+
+    try {
+      await updateTask(task.id, getSubmitData())
+    } catch (error) {
+      // Error is handled by useTaskOperations hook
+    }
+  }
 
   const formatDateTime = (dateString: string | Date | null) => {
     if (!dateString) return "Not set"
@@ -54,47 +78,7 @@ export function ViewTaskDialog({ task, isEditable = false, children }: ViewTaskD
     })
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!isEditable) return
-    
-    setLoading(true)
-
-    try {
-      const response = await fetch(`/api/tasks/${task.id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: formData.title,
-          description: formData.description,
-          status: formData.status,
-          priority: formData.priority,
-          dueDate: formData.dueDate || null,
-        }),
-      })
-
-      if (response.ok) {
-        setOpen(false)
-        router.refresh()
-      } else {
-        const error = await response.json()
-        console.error("Error updating task:", error.error)
-      }
-    } catch (error) {
-      console.error("Error updating task:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }))
-  }
+  const validationError = validateForm()
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -125,6 +109,9 @@ export function ViewTaskDialog({ task, isEditable = false, children }: ViewTaskD
                 />
               ) : (
                 <p className="text-sm text-gray-600 dark:text-gray-400">{task.title}</p>
+              )}
+              {isEditable && validationError && (
+                <p className="text-sm text-destructive">{validationError}</p>
               )}
             </div>
 
@@ -243,7 +230,7 @@ export function ViewTaskDialog({ task, isEditable = false, children }: ViewTaskD
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={loading || !formData.title.trim()}>
+              <Button type="submit" disabled={loading || !isValid}>
                 {loading ? "Updating..." : "Update Task"}
               </Button>
             </DialogFooter>

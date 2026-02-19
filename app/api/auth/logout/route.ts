@@ -1,23 +1,21 @@
 import { userRepo } from "@/repositories/user.repo";
+import { AuthService } from "@/lib/services/auth.service";
+import { handleApiError } from "@/lib/utils/error-handler";
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 
 export async function POST(req: Request) {
     try {
-        const cookieStore = await cookies();
-        const refreshToken = cookieStore.get("refreshToken")?.value;
+        const refreshToken = await AuthService.getRefreshToken();
 
         if (refreshToken) {
             await userRepo.deleteRefreshToken(refreshToken);
         }
 
         // Clear cookies
-        cookieStore.delete("refreshToken");
-        cookieStore.delete("auth-token");
+        await AuthService.clearAuthCookies();
 
         return NextResponse.json({ message: "Logged out successfully" });
     } catch (error) {
-        console.error("Logout error:", error);
-        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+        return handleApiError(error);
     }
 }

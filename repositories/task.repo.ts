@@ -1,8 +1,8 @@
 import { db } from '@/lib/db';
-import { tasks, users } from '@/lib/db/schema';
-import { eq, and, like, desc, asc, ilike } from 'drizzle-orm';
+import { tasks } from '@/lib/db/schema';
+import { eq, and, desc, asc, ilike } from 'drizzle-orm';
 import { NewTask, Task } from '@/lib/db/schema';
-import { TaskListOptions, PaginatedTasks } from '@/lib/types/task';
+import { TaskListOptions, PaginatedTasks } from '@/lib/utils/client-task';
 
 export class TaskRepository {
   // Create a new task

@@ -1,5 +1,5 @@
 import { Calendar } from "lucide-react";
-import { Task, PaginatedTasks } from "@/lib/types/task";
+import { Task, PaginatedTasks } from "@/lib/utils/client-task";
 import { TaskCard } from "./TaskCard";
 import { Pagination } from "./Pagination";
 

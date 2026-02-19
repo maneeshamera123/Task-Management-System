@@ -3,50 +3,36 @@
 import { useState } from 'react';
 import { Edit, Trash2, View } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Task } from "@/lib/types/task";
-
+import { Task } from "@/lib/utils/client-task";
 import { getStatusIcon, getStatusColor, getPriorityColor } from "@/lib/utils/task-utils";
 import { ViewTaskDialog } from "./ViewTaskDialog";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useTaskOperations } from "@/lib/hooks/use-task-operations";
 
 interface TaskCardProps {
     task: Task;
 }
 
 export function TaskCard({ task }: TaskCardProps) {
-    const router = useRouter();
     const [isToggling, setIsToggling] = useState(false);
+    
+    const { deleteTask, toggleTaskStatus } = useTaskOperations({
+        refreshOnSuccess: true,
+    });
 
     const handleDelete = async () => {
-        const res = await fetch(`/api/tasks/${task.id}`, {
-            method: 'DELETE',
-        });
-        if (!res.ok) {
-            const errorData = await res.json();
-            console.error('Delete API error:', errorData);
-            toast.error(errorData.error || 'Failed to delete task');
-            return;
+        try {
+            await deleteTask(task.id);
+        } catch (error) {
+            // Error is handled by useTaskOperations hook
         }
-        toast.success('Task deleted successfully');
-        router.refresh();
     };
 
     const handleToggle = async () => {
         setIsToggling(true);
         try {
-            const res = await fetch(`/api/tasks/${task.id}/toggle`, {
-                method: 'POST',
-            });
-            if (!res.ok) {
-                const errorData = await res.json();
-                console.error('Toggle API error:', errorData);
-                toast.error(errorData.error || 'Failed to toggle task status');
-                return;
-            }
-            const updatedTask = await res.json();
-            toast.success(`Task status updated to ${updatedTask.status.replace('-', ' ')}`);
-            router.refresh();
+            await toggleTaskStatus(task.id);
+        } catch (error) {
+            // Error is handled by useTaskOperations hook
         } finally {
             setIsToggling(false);
         }

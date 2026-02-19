@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { verifyAccessToken } from "@/lib/utils/auth-utils";
 import { envVars } from "@/lib/env";
-import { Status, Priority } from "@/lib/types/task";
+import { Status, Priority } from "@/lib/utils/client-task";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { TaskFilters } from "@/components/dashboard/TaskFilters";

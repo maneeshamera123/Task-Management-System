@@ -1,4 +1,4 @@
-import { getCopyrightText } from "@/lib/utils";
+import { getCopyrightText } from "@/lib/utils/date";
 
 export function Footer() {
   return (

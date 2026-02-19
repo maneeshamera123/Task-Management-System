@@ -1,16 +1,17 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/class-names";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
-import taskManagementLogo from "@/public/_static/logo/task-management.svg";
+import taskManagementLogo from "@/public/logo/task-management.svg";
 import { siteConfig } from "@/config/site";
 import { useState } from 'react';
 import { useRouter } from "next/navigation";
+import { ClientAuthService } from "@/lib/utils/client-auth";
 
 export function SignupForm({
   className,
@@ -36,21 +37,7 @@ export function SignupForm({
     }
 
     try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, name }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Registration failed");
-      }
-
-      // Store access token in localStorage (for simplicity in this demo)
-      localStorage.setItem("accessToken", data.accessToken);
-
+      await ClientAuthService.register({ email, password, name });
       router.push("/dashboard");
     } catch (err: any) {
       setError(err.message);

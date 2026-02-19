@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { TaskRepository } from '@/repositories/task.repo';
-import { verifyAccessToken } from '@/lib/utils/auth-utils';
+import { NextRequest } from 'next/server';
+import { TaskService } from '@/lib/services/task.service';
+import { authenticateRequest } from '@/lib/middleware/auth-middleware';
+import { handleApiError, createSuccessResponse } from '@/lib/utils/error-handler';
 
 // POST /api/tasks/[id]/toggle - Toggle task status
 export async function POST(
@@ -8,35 +9,13 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Verify authentication
-    const token = request.cookies.get('auth-token')?.value;
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const payload = await verifyAccessToken(token);
-    if (!payload || !payload.userId) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-    }
-
+    const authenticatedRequest = await authenticateRequest(request);
+    const userId = authenticatedRequest.userId;
     const { id: taskId } = await params;
-    if (!taskId) {
-      return NextResponse.json({ error: 'Task ID is required' }, { status: 400 });
-    }
 
-    // Toggle task status
-    const task = await TaskRepository.toggleTaskStatus(payload.userId, taskId);
-    
-    if (!task) {
-      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
-    }
-
-    return NextResponse.json(task);
+    const task = await TaskService.toggleTaskStatus(userId, taskId);
+    return createSuccessResponse(task);
   } catch (error) {
-    console.error('Error toggling task status:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

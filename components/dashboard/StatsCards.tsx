@@ -1,5 +1,5 @@
 import { Calendar, CheckCircle, Clock, AlertCircle } from "lucide-react";
-import { TaskStats } from "@/lib/types/task";
+import { TaskStats } from "@/lib/utils/client-task";
 
 interface StatsCardsProps {
     stats: TaskStats | null;

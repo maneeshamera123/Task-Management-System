@@ -1,34 +1,36 @@
 import { userRepo } from "@/repositories/user.repo";
 import { verifyRefreshToken, generateAccessToken } from "@/lib/utils/auth-utils";
+import { AuthService } from "@/lib/services/auth.service";
+import { handleApiError, AuthError } from "@/lib/utils/error-handler";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
 export async function POST(req: Request) {
     try {
-        const cookieStore = await cookies();
-        const refreshToken = cookieStore.get("refreshToken")?.value;
+        const refreshToken = await AuthService.getRefreshToken();
 
         if (!refreshToken) {
-            return NextResponse.json({ error: "Refresh token missing" }, { status: 401 });
+            throw new AuthError("Refresh token missing");
         }
 
         // Verify token
         const payload = await verifyRefreshToken(refreshToken);
         if (!payload) {
-            return NextResponse.json({ error: "Invalid refresh token" }, { status: 401 });
+            throw new AuthError("Invalid refresh token");
         }
 
         // Check DB for token
         const dbToken = await userRepo.findRefreshToken(refreshToken);
 
         if (!dbToken) {
-            return NextResponse.json({ error: "Token expired or revoked" }, { status: 401 });
+            throw new AuthError("Token expired or revoked");
         }
 
         // Generate new access token
         const accessToken = await generateAccessToken({ userId: payload.userId });
 
         // Set new access token in cookie
+        const cookieStore = await cookies();
         cookieStore.set("auth-token", accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
@@ -39,7 +41,6 @@ export async function POST(req: Request) {
 
         return NextResponse.json({ message: "Token refreshed successfully" });
     } catch (error) {
-        console.error("Refresh error:", error);
-        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+        return handleApiError(error);
     }
 }
