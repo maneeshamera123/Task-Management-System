@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "seed:tasks": "tsx scripts/seed-tasks.ts"
+    "seed:tasks": "tsx scripts/seed-tasks.ts",
+    "db:push": "drizzle-kit push",
+    "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
