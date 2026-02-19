@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { verifyAccessToken } from "@/lib/utils/auth-utils";
 import { envVars } from "@/lib/env";
 import { Status, Priority } from "@/lib/utils/client-task";
@@ -68,7 +69,12 @@ export default async function Dashboard({ searchParams }: DashboardProps) {
   const status = (resolvedSearchParams.status as Status) || "all";
   const priority = (resolvedSearchParams.priority as Priority) || "all";
   const search = resolvedSearchParams.search || "";
-  const baseUrl = "";
+  
+  // Get base URL for server-side fetch
+  const headersList = await headers();
+  const host = headersList.get('host');
+  const protocol = headersList.get('x-forwarded-proto') || 'http';
+  const baseUrl = `${protocol}://${host}`;
 
   // Build query parameters for the tasks API
   const tasksParams = new URLSearchParams({
