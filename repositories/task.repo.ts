@@ -147,33 +147,6 @@ export class TaskRepository {
     return result.length > 0;
   }
 
-  // Toggle task status (pending <-> in-progress <-> completed)
-  static async toggleTaskStatus(userId: string, taskId: string): Promise<Task | null> {
-    const task = await this.getTaskById(userId, taskId);
-
-    if (!task) {
-      return null;
-    }
-
-    let newStatus: 'pending' | 'in-progress' | 'completed';
-
-    switch (task.status) {
-      case 'pending':
-        newStatus = 'in-progress';
-        break;
-      case 'in-progress':
-        newStatus = 'completed';
-        break;
-      case 'completed':
-        newStatus = 'pending';
-        break;
-      default:
-        newStatus = 'pending';
-    }
-
-    return await this.updateTask(userId, taskId, { status: newStatus });
-  }
-
   // Get task statistics for a user
   static async getTaskStats(userId: string) {
     const userTasks = await db

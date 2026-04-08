@@ -143,21 +143,6 @@ export class ClientTaskService {
     }
   }
 
-  // Toggle task status
-  static async toggleTaskStatus(taskId: string): Promise<Task> {
-    const response = await ClientAuthService.authenticatedFetch(`/api/tasks/${taskId}/toggle`, {
-      method: 'POST',
-    });
-
-    const result = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(result.error || 'Failed to toggle task status');
-    }
-
-    return result;
-  }
-
   // Get task statistics
   static async getTaskStats(): Promise<TaskStats> {
     const response = await ClientAuthService.authenticatedFetch('/api/tasks/stats');

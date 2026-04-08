@@ -113,21 +113,6 @@ export class TaskService {
     }
   }
 
-  // Toggle task status
-  static async toggleTaskStatus(userId: string, taskId: string): Promise<Task> {
-    if (!taskId) {
-      throw new Error("Task ID is required");
-    }
-
-    const task = await TaskRepository.toggleTaskStatus(userId, taskId);
-    
-    if (!task) {
-      throw new Error("Task not found");
-    }
-
-    return task;
-  }
-
   // Get task statistics for a user
   static async getTaskStats(userId: string): Promise<TaskStats> {
     return await TaskRepository.getTaskStats(userId);

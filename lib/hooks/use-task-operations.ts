@@ -66,27 +66,9 @@ export function useTaskOperations(options: UseTaskOperationsOptions = {}) {
     }
   };
 
-  const toggleTaskStatus = async (taskId: string): Promise<Task> => {
-    try {
-      const { ClientTaskService } = await import('@/lib/utils/client-task');
-      const task = await ClientTaskService.toggleTaskStatus(taskId);
-      
-      if (refreshOnSuccess) {
-        router.refresh();
-      }
-      
-      onSuccess(`Task status updated to ${task.status.replace('-', ' ')}`);
-      return task;
-    } catch (error) {
-      onError(error as Error);
-      throw error;
-    }
-  };
-
   return {
     createTask,
     updateTask,
     deleteTask,
-    toggleTaskStatus,
   };
 }
