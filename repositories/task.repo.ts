@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { tasks } from '@/lib/db/schema';
-import { eq, and, desc, asc, ilike } from 'drizzle-orm';
+import { eq, and, desc, asc, ilike, count, sql } from 'drizzle-orm';
 import { NewTask, Task } from '@/lib/db/schema';
 import { TaskListOptions, PaginatedTasks } from '@/lib/utils/client-task';
 
@@ -77,12 +77,12 @@ export class TaskRepository {
       .where(and(...conditions))
       .orderBy(sortOrder === 'asc' ? asc(orderColumn) : desc(orderColumn));
 
-    // Get total count for pagination
-    const totalCount = await db
-      .select({ count: tasks.id })
+    const [countResult] = await db
+      .select({ count: count() })
       .from(tasks)
-      .where(and(...conditions))
-      .then(result => result.length);
+      .where(and(...conditions));
+
+    const totalCount = countResult?.count ?? 0;
 
     // Apply pagination
     const offset = (page - 1) * limit;
@@ -147,27 +147,37 @@ export class TaskRepository {
     return result.length > 0;
   }
 
-  // Get task statistics for a user
   static async getTaskStats(userId: string) {
-    const userTasks = await db
+    const statusCounts = await db
       .select({
         status: tasks.status,
-        priority: tasks.priority,
+        count: count(),
       })
       .from(tasks)
-      .where(eq(tasks.userId, userId));
+      .where(eq(tasks.userId, userId))
+      .groupBy(tasks.status);
 
-    const stats = {
-      total: userTasks.length,
-      pending: userTasks.filter(t => t.status === 'pending').length,
-      inProgress: userTasks.filter(t => t.status === 'in-progress').length,
-      completed: userTasks.filter(t => t.status === 'completed').length,
-      urgent: userTasks.filter(t => t.priority === 'urgent').length,
-      high: userTasks.filter(t => t.priority === 'high').length,
-      medium: userTasks.filter(t => t.priority === 'medium').length,
-      low: userTasks.filter(t => t.priority === 'low').length,
+    const priorityCounts = await db
+      .select({
+        priority: tasks.priority,
+        count: count(),
+      })
+      .from(tasks)
+      .where(eq(tasks.userId, userId))
+      .groupBy(tasks.priority);
+
+    const getCount = (arr: { status?: string; priority?: string; count: number }[], key: string) =>
+      arr.find(x => (x.status || x.priority) === key)?.count ?? 0;
+
+    return {
+      total: statusCounts.reduce((sum, r) => sum + r.count, 0),
+      pending: getCount(statusCounts as any, 'pending'),
+      inProgress: getCount(statusCounts as any, 'in-progress'),
+      completed: getCount(statusCounts as any, 'completed'),
+      urgent: getCount(priorityCounts as any, 'urgent'),
+      high: getCount(priorityCounts as any, 'high'),
+      medium: getCount(priorityCounts as any, 'medium'),
+      low: getCount(priorityCounts as any, 'low'),
     };
-
-    return stats;
   }
 }
